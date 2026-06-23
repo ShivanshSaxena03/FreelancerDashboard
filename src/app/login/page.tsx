@@ -1,28 +1,33 @@
 'use client';
 
 import { useSession, signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
 import { Mail, Lock, AlertCircle, ShieldAlert } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Verification stage toggle
   const [showOtpScreen, setShowOtpScreen] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') {
       router.push('/dashboard');
     }
-  }, [status, router]);
+
+    const reason = searchParams.get('reason');
+    if (reason === 'timeout') {
+      setError('Your admin session has expired due to 1 hour inactivity. Please log in again.');
+      localStorage.removeItem('session_timer_expiry');
+    }
+  }, [status, router, searchParams]);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +35,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Step 1: Request OTP validation via server
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -56,7 +60,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Step 2: Request NextAuth verification including OTP pin
       const res = await signIn('credentials', {
         redirect: false,
         email,
@@ -76,10 +79,113 @@ export default function LoginPage() {
     }
   };
 
-  if (status === 'loading') {
-    return null;
-  }
+  return (
+    <div className="bg-white py-8 px-4 border border-neutral-200 sm:rounded sm:px-10">
+      {error && (
+        <div className="bg-neutral-50 border-l-2 border-black p-3 flex gap-2 items-center text-xs text-neutral-800 mb-5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-black" />
+          <span>{error}</span>
+        </div>
+      )}
 
+      {!showOtpScreen ? (
+        <form className="space-y-5" onSubmit={handlePasswordSubmit}>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
+              Email Address
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
+                <Mail className="h-4 w-4" />
+              </div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="shivanshsaxena03102006@gmail.com"
+                className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
+              Password
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
+                <Lock className="h-4 w-4" />
+              </div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-xs font-bold text-white bg-black hover:bg-neutral-900 focus:outline-none transition-all disabled:opacity-50"
+            >
+              {loading ? 'Sending Verification Code...' : 'Request Verification Code'}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form className="space-y-5" onSubmit={handleOtpSubmit}>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
+              Verification Code (OTP)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
+                <ShieldAlert className="h-4 w-4" />
+              </div>
+              <input
+                type="text"
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="6-digit code"
+                maxLength={6}
+                className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all tracking-widest font-mono text-center"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowOtpScreen(false)}
+              className="text-xs text-neutral-500 hover:text-black font-semibold"
+            >
+              Back to credentials
+            </button>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-xs font-bold text-white bg-black hover:bg-neutral-900 focus:outline-none transition-all disabled:opacity-50"
+            >
+              {loading ? 'Authenticating Verification Code...' : 'Verify & Enter Workspace'}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -89,115 +195,16 @@ export default function LoginPage() {
         <h2 className="text-center text-xl font-bold tracking-tight text-neutral-900">
           Sign in to Freelancer OS
         </h2>
-        <p className="mt-1 text-center text-xs text-neutral-400">
-          {showOtpScreen ? 'Enter the verification code sent to your email.' : 'Enter admin credentials to access document generator.'}
-        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 border border-neutral-200 sm:rounded sm:px-10">
-          {error && (
-            <div className="bg-neutral-50 border-l-2 border-black p-3 flex gap-2 items-center text-xs text-neutral-800 mb-5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-black" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {!showOtpScreen ? (
-            <form className="space-y-5" onSubmit={handlePasswordSubmit}>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="shivanshsaxena03102006@gmail.com"
-                    className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all"
-                  />
-
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-                    <Lock className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-xs font-bold text-white bg-black hover:bg-neutral-900 focus:outline-none transition-all disabled:opacity-50"
-                >
-                  {loading ? 'Sending Verification Code...' : 'Request Verification Code'}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form className="space-y-5" onSubmit={handleOtpSubmit}>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1.5">
-                  Verification Code (OTP)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-                    <ShieldAlert className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    placeholder="6-digit code"
-                    maxLength={6}
-                    className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all tracking-widest font-mono text-center"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => setShowOtpScreen(false)}
-                  className="text-xs text-neutral-500 hover:text-black font-semibold"
-                >
-                  Back to credentials
-                </button>
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-xs font-bold text-white bg-black hover:bg-neutral-900 focus:outline-none transition-all disabled:opacity-50"
-                >
-                  {loading ? 'Authenticating Verification Code...' : 'Verify & Enter Workspace'}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+        <Suspense fallback={
+          <div className="bg-white py-8 px-4 border border-neutral-200 sm:rounded sm:px-10 text-center text-xs text-neutral-400">
+            Loading Auth Engine...
+          </div>
+        }>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

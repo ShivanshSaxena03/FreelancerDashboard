@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { LayoutDashboard, Users, FileText, Settings, LogOut, ChevronRight, Menu, X, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
+import SessionTimer from './components/SessionTimer';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -55,7 +57,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
+          {/* Absolute Session Timer Block */}
+          <div className="mb-6">
+            <SessionTimer />
+          </div>
+
           {/* Nav Items */}
+
           <nav className="space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
