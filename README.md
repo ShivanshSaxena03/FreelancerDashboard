@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Freelancer OS - Freelancer Dashboard
 
-## Getting Started
+A fully featured, production-ready, and highly secure Progressive Web Application (PWA) designed for freelancers to manage clients, build dynamic PDF contracts/invoices on the fly, track project metadata, and monitor system-wide activity.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **📊 Dashboard & Metrics**: Track active clients, pending payments, compiled documents, and real-time login statistics.
+- **📄 Document Builder**: Dynamically design invoices and contracts. Zero server-side file footprints; all PDFs are built dynamically on the client side using `@react-pdf/renderer`.
+- **👥 Clients Directory**: Store client contact details securely with strict 10-digit contact number limits.
+- **🔒 Security & Protections**:
+  - **Verification Flow**: OTP-based authentication for registration and logins.
+  - **Rate Limiting**: Custom in-memory rate limiting restricted to 60 API requests/min per IP to prevent DDoS and brute-force attacks.
+  - **Session Isolation**: Expiring sessions (1-hour absolute duration) with isolated local storage timers per user ID.
+  - **IDOR Protection**: Strict database ownership checks on client/document queries.
+  - **Email Alerts**: Automatic SMTP/Email notifications for logins and deactivations.
+- **📱 Progressive Web App (PWA)**:
+  - Valid manifest configuration and high-resolution PWA app icons.
+  - Custom service worker (`sw.js`) supporting caching strategies and an offline fallback route.
+  - Custom "Install App" prompt capability integrated directly into the layout headers and landing page.
+- **🎨 Modern Premium UI**:
+  - Built with highly responsive, sleek Tailwind-inspired CSS styling.
+  - Interactive background canvas particle animation powered by WebGL/OGL.
+  - Interactive modal views and smooth transitions.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router, Turbopack)
+- **Database**: PostgreSQL (pg pool client)
+- **Authentication**: NextAuth.js (JWT Strategy)
+- **Styling**: Tailwind CSS & Vanilla CSS (with custom utility rules)
+- **PDF Generation**: `@react-pdf/renderer` (on-the-fly client generation)
+- **Animations**: OGL (WebGL framework for particles canvas)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+- **Node.js** (v18 or higher recommended)
+- **PostgreSQL** instance
+
+### 2. Environment Configuration
+Create a `.env.local` file in the root directory and populate the following keys:
+```env
+# Database Credentials
+DATABASE_URL=postgresql://username:password@localhost:5432/freelancer_db
+
+# NextAuth Configs
+NEXTAUTH_SECRET=your_jwt_signing_secret_here
+NEXTAUTH_URL=http://localhost:3000
+
+# SMTP / Email Settings
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+NOTIFY_EMAIL=admin_notifications@example.com
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Install Dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Running the App
+Run the local dev server:
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) on your browser to view the application.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. Production Build
+To build and optimize the project for deployment:
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📜 Database Schema Init
+The schema will automatically self-initialize on the first connection using the automated setup script (`src/lib/init-db.ts`). It configures:
+- `users`: Standard profiles and Roles (`admin` vs. `user`).
+- `clients` & `documents`: Cascaded records with `ON DELETE SET NULL` mapping to preserve data integrity when users are deactivated.
+- `otps`: Expiration-tracked verification codes.
+- `activity_logs`: Logs tracking login alerts and modifications.
