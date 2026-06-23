@@ -12,13 +12,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
     }
 
+    // Input validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ success: false, error: 'Invalid email address format' }, { status: 400 });
+    }
+
+    const sanitizedEmail = email.toLowerCase().trim();
+
     if (actionType === 'login') {
       if (!password) {
         return NextResponse.json({ success: false, error: 'Password is required' }, { status: 400 });
       }
 
       // Verify user credentials first
-      const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      const res = await pool.query('SELECT * FROM users WHERE email = $1', [sanitizedEmail]);
       const user = res.rows[0];
 
       if (!user) {
@@ -31,7 +39,7 @@ export async function POST(request: Request) {
       }
     } else if (actionType === 'register') {
       // Check if user already exists
-      const res = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      const res = await pool.query('SELECT * FROM users WHERE email = $1', [sanitizedEmail]);
       if (res.rows.length > 0) {
         return NextResponse.json({ success: false, error: 'An account with this email already exists' }, { status: 400 });
       }
@@ -42,17 +50,17 @@ export async function POST(request: Request) {
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
 
     // Remove any previous OTPs for this email to prevent spam
-    await pool.query('DELETE FROM otps WHERE email = $1 AND type = $2', [email, actionType]);
+    await pool.query('DELETE FROM otps WHERE email = $1 AND type = $2', [sanitizedEmail, actionType]);
 
     // Insert new OTP record
     await pool.query(
       'INSERT INTO otps (email, code, type, expires_at) VALUES ($1, $2, $3, $4)',
-      [email, otpCode, actionType, expiresAt]
+      [sanitizedEmail, otpCode, actionType, expiresAt]
     );
 
     // Send OTP email
     await sendEmail({
-      to: email,
+      to: sanitizedEmail,
       subject: `Freelancer OS: Verification Code for ${actionType === 'register' ? 'Registration' : 'Login'}`,
       html: `
         <div style="font-family: sans-serif; padding: 25px; border: 1px solid #eaeaea; border-radius: 8px; max-width: 450px; margin: 0 auto; color: #111;">
