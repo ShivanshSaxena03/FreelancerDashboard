@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       SELECT d.*, c.name as client_name, c.company_name as client_company
       FROM documents d
       LEFT JOIN clients c ON d.client_id = c.id
-      WHERE d.user_id = $1
+      WHERE d.user_id = $1 AND (d.is_deleted = FALSE OR d.is_deleted IS NULL)
     `;
     const params: any[] = [userId];
 
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       // Update document
       res = await pool.query(
         `UPDATE documents
-         SET client_id = $1, title = $2, content = $3, status = $4, version = $5, updated_at = CURRENT_TIMESTAMP
+         SET client_id = $1, title = $2, content = $3, status = $4, version = $5, is_deleted = FALSE, updated_at = CURRENT_TIMESTAMP
          WHERE document_id = $6 AND user_id = $7 RETURNING *`,
         [client_id, title, JSON.stringify(content), status || 'draft', nextVersion, document_id, userId]
       );
@@ -133,8 +133,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, error: 'Document ID is required' }, { status: 400 });
     }
 
-    await pool.query('DELETE FROM document_versions WHERE document_id = $1 AND user_id = $2', [documentId, userId]);
-    await pool.query('DELETE FROM documents WHERE document_id = $1 AND user_id = $2', [documentId, userId]);
+    await pool.query('UPDATE documents SET is_deleted = TRUE WHERE document_id = $1 AND user_id = $2', [documentId, userId]);
 
     // Activity Log
     await pool.query(
