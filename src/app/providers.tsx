@@ -17,8 +17,6 @@ export default function Providers({ children }: { children: ReactNode }) {
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent the default mini-infobar from appearing
-      e.preventDefault();
       // Stash the event so it can be triggered later
       (window as any).deferredPrompt = e;
       // Dispatch a custom event so UI components can render the install button

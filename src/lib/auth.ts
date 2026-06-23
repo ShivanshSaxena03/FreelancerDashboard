@@ -148,9 +148,22 @@ export const authOptions = {
         token.id = user.id;
         token.role = user.role;
       }
+
+      // Check if user still exists to enforce deactivation/session suspension
+      if (token?.id) {
+        try {
+          const userCheck = await pool.query('SELECT role FROM users WHERE id = $1', [token.id]);
+          if (userCheck.rows.length === 0) {
+            return null; // Forces token invalidation
+          }
+        } catch (dbErr) {
+          console.error('Error validating token user:', dbErr);
+        }
+      }
       return token;
     },
     async session({ session, token }: any) {
+      if (!token) return null; // Invalidate session if token is nullified
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
