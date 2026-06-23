@@ -61,10 +61,10 @@ export default function DocumentsDashboard() {
   const [services, setServices] = useState<any[]>([]);
   const [timeline, setTimeline] = useState('4 Weeks');
   const [paymentSchedule, setPaymentSchedule] = useState('50% Upfront, 50% Handover');
-  const [revisions, setRevisions] = useState(3);
-  const [advancePercent, setAdvancePercent] = useState(50);
-  const [tax, setTax] = useState(0);
-  const [discount, setDiscount] = useState(0);
+  const [revisions, setRevisions] = useState<number | string>(3);
+  const [advancePercent, setAdvancePercent] = useState<number | string>(50);
+  const [tax, setTax] = useState<number | string>(0);
+  const [discount, setDiscount] = useState<number | string>(0);
   const [currency, setCurrency] = useState('$');
 
   // Agreement Clauses
@@ -237,16 +237,25 @@ export default function DocumentsDashboard() {
     // Prepare content payload
     let content: any = {};
     if (docType === 'quotation' || docType === 'invoice') {
-      const subtotal = services.reduce((acc, curr) => acc + parseFloat(curr.price || 0), 0);
-      const grandTotal = subtotal + parseFloat(tax as any) - parseFloat(discount as any);
+      const mappedServices = services.map(s => ({
+        ...s,
+        price: parseFloat(s.price) || 0
+      }));
+      const parsedTax = parseFloat(tax as any) || 0;
+      const parsedDiscount = parseFloat(discount as any) || 0;
+      const parsedRevisions = parseInt(revisions as any) || 0;
+      const parsedAdvance = parseInt(advancePercent as any) || 0;
+      const subtotal = mappedServices.reduce((acc, curr) => acc + curr.price, 0);
+      const grandTotal = subtotal + parsedTax - parsedDiscount;
+      
       content = {
-        services,
+        services: mappedServices,
         timeline,
         paymentSchedule,
-        revisions,
-        advancePercent,
-        tax,
-        discount,
+        revisions: parsedRevisions,
+        advancePercent: parsedAdvance,
+        tax: parsedTax,
+        discount: parsedDiscount,
         currency,
         subtotal,
         grandTotal,
@@ -583,8 +592,9 @@ export default function DocumentsDashboard() {
                           <input
                             type="number"
                             placeholder="0"
-                            value={service.price === 0 ? '' : service.price}
-                            onChange={(e) => updateService(index, 'price', parseFloat(e.target.value) || 0)}
+                            value={service.price}
+                            onChange={(e) => updateService(index, 'price', e.target.value)}
+                            onFocus={() => { if (service.price === 0 || service.price === '0') updateService(index, 'price', ''); }}
                             className="block w-full px-2 py-1 border border-neutral-200 bg-white rounded text-xs"
                           />
                         </div>
@@ -625,9 +635,10 @@ export default function DocumentsDashboard() {
                       </label>
                       <input
                         type="number"
-                        value={tax === 0 ? '' : tax}
+                        value={tax}
                         placeholder="0"
-                        onChange={(e) => setTax(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => setTax(e.target.value)}
+                        onFocus={() => { if (tax === 0 || tax === '0') setTax(''); }}
                         className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                       />
                     </div>
@@ -637,9 +648,10 @@ export default function DocumentsDashboard() {
                       </label>
                       <input
                         type="number"
-                        value={discount === 0 ? '' : discount}
+                        value={discount}
                         placeholder="0"
-                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => setDiscount(e.target.value)}
+                        onFocus={() => { if (discount === 0 || discount === '0') setDiscount(''); }}
                         className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                       />
                     </div>
@@ -650,9 +662,10 @@ export default function DocumentsDashboard() {
                         </label>
                         <input
                           type="number"
-                          value={advancePercent === 0 ? '' : advancePercent}
+                          value={advancePercent}
                           placeholder="0"
-                          onChange={(e) => setAdvancePercent(parseInt(e.target.value) || 0)}
+                          onChange={(e) => setAdvancePercent(e.target.value)}
+                          onFocus={() => { if (advancePercent === 0 || advancePercent === '0') setAdvancePercent(''); }}
                           className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                         />
                       </div>
@@ -678,9 +691,10 @@ export default function DocumentsDashboard() {
                         </label>
                         <input
                           type="number"
-                          value={revisions === 0 ? '' : revisions}
+                          value={revisions}
                           placeholder="0"
-                          onChange={(e) => setRevisions(parseInt(e.target.value) || 0)}
+                          onChange={(e) => setRevisions(e.target.value)}
+                          onFocus={() => { if (revisions === 0 || revisions === '0') setRevisions(''); }}
                           className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                         />
                       </div>
