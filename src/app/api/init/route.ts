@@ -1,0 +1,12 @@
+import { NextResponse } from 'next/server';
+import { initDb } from '@/lib/init-db';
+
+export async function GET() {
+  try {
+    await initDb();
+    return NextResponse.json({ success: true, message: 'Database initialized successfully' });
+  } catch (error: any) {
+    console.error('Initialization error:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
