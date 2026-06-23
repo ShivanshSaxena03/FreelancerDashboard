@@ -84,9 +84,9 @@ function LoginForm() {
         const activeSession = await sessionRes.json();
         const user = activeSession?.user as any;
         if (user?.role === 'admin') {
-          router.push('/dashboard/admin');
+          window.location.href = '/dashboard/admin';
         } else {
-          router.push('/dashboard');
+          window.location.href = '/dashboard';
         }
       }
     } catch (err) {
