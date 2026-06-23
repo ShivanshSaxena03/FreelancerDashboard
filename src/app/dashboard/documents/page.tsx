@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Search, Eye, Filter, Edit2, Plus, Download, Trash, RefreshCw } from 'lucide-react';
 import DocumentPreviewer from './DocumentPreviewer';
 import ConfirmModal from '../components/ConfirmModal';
@@ -109,9 +110,18 @@ export default function DocumentsDashboard() {
     }
   };
 
+  const { data: session } = useSession();
+
   useEffect(() => {
+    if (session) {
+      const user = session.user as any;
+      if (user?.role === 'admin') {
+        router.replace('/dashboard/admin');
+        return;
+      }
+    }
     fetchInitialData();
-  }, []);
+  }, [session, router]);
 
   useEffect(() => {
     const newType = searchParams.get('new');

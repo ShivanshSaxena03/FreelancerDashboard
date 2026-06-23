@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsModule() {
   const [freelancerName, setFreelancerName] = useState('');
@@ -20,7 +22,18 @@ export default function SettingsModule() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const { data: session } = useSession();
+  const router = useRouter();
+
   useEffect(() => {
+    if (session) {
+      const user = session.user as any;
+      if (user?.role === 'admin') {
+        router.replace('/dashboard/admin');
+        return;
+      }
+    }
+
     async function loadSettings() {
       try {
         const res = await fetch('/api/settings');
@@ -47,7 +60,7 @@ export default function SettingsModule() {
       }
     }
     loadSettings();
-  }, []);
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

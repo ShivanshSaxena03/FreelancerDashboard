@@ -3,7 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, ChevronRight, Menu, X, Plus } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, ChevronRight, Menu, X, Plus, Award } from 'lucide-react';
+
 import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 import SessionTimer from './components/SessionTimer';
@@ -15,11 +16,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const user = session?.user as any;
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
+      return;
     }
-  }, [status, router]);
+
+    // Force redirect admin to /dashboard/admin if they try to access other dashboard pages
+    if (status === 'authenticated' && isAdmin && pathname !== '/dashboard/admin') {
+      router.replace('/dashboard/admin');
+    }
+  }, [status, isAdmin, pathname, router]);
 
   if (status === 'loading') {
     return (
@@ -34,12 +44,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!session) return null;
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Clients', href: '/dashboard/clients', icon: Users },
-    { name: 'Documents', href: '/dashboard/documents', icon: FileText },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-  ];
+  // Filter navigation items: Admins only get Admin Controls, standard users get normal navigation.
+  const navigation = isAdmin
+    ? [{ name: 'Admin Controls', href: '/dashboard/admin', icon: Award }]
+    : [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Clients', href: '/dashboard/clients', icon: Users },
+        { name: 'Documents', href: '/dashboard/documents', icon: FileText },
+        { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+      ];
+
+
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col md:flex-row">

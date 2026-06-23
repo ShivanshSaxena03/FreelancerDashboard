@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Trash2, Edit2, CheckCircle2, X } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import ConfirmModal from '../components/ConfirmModal';
 
 interface Client {
@@ -38,9 +39,9 @@ export default function ClientsModule() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<number | null>(null);
 
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-
 
   const fetchClients = async () => {
     try {
@@ -57,11 +58,18 @@ export default function ClientsModule() {
   };
 
   useEffect(() => {
+    if (session) {
+      const user = session.user as any;
+      if (user?.role === 'admin') {
+        router.replace('/dashboard/admin');
+        return;
+      }
+    }
     fetchClients();
     if (searchParams.get('action') === 'new') {
       handleOpenCreate();
     }
-  }, [searchParams]);
+  }, [searchParams, session, router]);
 
   const handleOpenCreate = () => {
     setEditingClient(null);

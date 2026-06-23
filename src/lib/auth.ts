@@ -1,14 +1,23 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import pool from './db';
 import { sendEmail } from './email';
 import { initDb } from './init-db';
 
-
 export const authOptions = {
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
     CredentialsProvider({
+
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email', placeholder: 'admin@example.com' },
@@ -47,7 +56,7 @@ export const authOptions = {
         }
 
         const otpCheck = await pool.query(
-          'SELECT * FROM otps WHERE email = $1 AND code = $2 AND expires_at > NOW()',
+          "SELECT * FROM otps WHERE email = $1 AND code = $2 AND type = 'login' AND expires_at > NOW()",
           [credentials.email, credentials.otp]
         );
 
@@ -56,14 +65,13 @@ export const authOptions = {
         }
 
         // Delete used OTP
-        await pool.query('DELETE FROM otps WHERE email = $1', [credentials.email]);
-
+        await pool.query("DELETE FROM otps WHERE email = $1 AND type = 'login'", [credentials.email]);
 
         // Record activity log & trigger email alert asynchronously
         try {
           await pool.query(
-            'INSERT INTO activity_logs (action, details) VALUES ($1, $2)',
-            ['login', `User logged in: ${user.email}`]
+            'INSERT INTO activity_logs (user_id, action, details) VALUES ($1, $2, $3)',
+            [user.id, 'login', `User logged in: ${user.email}`]
           );
 
           // Send notification email alert
@@ -89,10 +97,67 @@ export const authOptions = {
           id: user.id.toString(),
           email: user.email,
           name: user.name,
+          role: user.role,
         };
       }
     })
   ],
+  callbacks: {
+    async signIn({ user, account, profile }: any) {
+      if (account?.provider === 'google') {
+        try {
+          await initDb();
+          // Check if user exists in the database
+          const checkRes = await pool.query('SELECT * FROM users WHERE email = $1', [user.email]);
+          let dbUser = checkRes.rows[0];
+
+          if (!dbUser) {
+            // Create a user record if none exists for this Google Account
+            const insertRes = await pool.query(
+              'INSERT INTO users (email, name, role) VALUES ($1, $2, $3) RETURNING *',
+              [user.email, user.name, 'user']
+            );
+            dbUser = insertRes.rows[0];
+
+            // Seed default settings for Google login user profile
+            const defaultClauses = {
+              ownership: 'Upon full payment, the Freelancer transfers all intellectual property rights to the Client.',
+              confidentiality: 'Both parties agree to keep all project information confidential.',
+              liability: 'The Developer shall not be liable for any business loss.',
+              intellectualProperty: 'All templates remain the property of the Developer.'
+            };
+            await pool.query(
+              `INSERT INTO settings (user_id, freelancer_name, freelancer_email, default_revision_count, default_payment_terms, default_agreement_clauses)
+               VALUES ($1, $2, $3, $4, $5, $6)`,
+              [dbUser.id, user.name, user.email, 3, '50% upfront, 50% upon project completion.', JSON.stringify(defaultClauses)]
+            );
+          }
+
+          user.id = dbUser.id.toString();
+          user.role = dbUser.role;
+          return true;
+        } catch (err) {
+          console.error('Google OAuth signin DB error:', err);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }: any) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }: any) {
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.role = token.role;
+      }
+      return session;
+    }
+  },
   pages: {
     signIn: '/login',
   },
@@ -102,4 +167,3 @@ export const authOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
-

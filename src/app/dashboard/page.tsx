@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Plus, FileText, ArrowRight, UserPlus, Eye, Users, FileSignature, Receipt, GraduationCap, Box, CheckSquare, Settings, ChevronRight } from 'lucide-react';
 
 
@@ -32,13 +34,27 @@ interface Document {
 }
 
 export default function DashboardOverview() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
   const [stats, setStats] = useState<Stats>({ clients: 0, quotations: 0, agreements: 0, invoices: 0, handovers: 0 });
+
   const [recentClients, setRecentClients] = useState<Client[]>([]);
   const [recentDocs, setRecentDocs] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Redirect admin users to Admin Controls and prevent standard dashboard feature access
+    if (session) {
+      const user = session.user as any;
+      if (user?.role === 'admin') {
+        router.replace('/dashboard/admin');
+        return;
+      }
+    }
+
     async function fetchData() {
+
       try {
         // Run schema init silently on page load to confirm schemas are created
         await fetch('/api/init');
