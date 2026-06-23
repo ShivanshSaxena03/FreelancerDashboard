@@ -21,7 +21,7 @@ export async function initDb() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS clients (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         name VARCHAR(255) NOT NULL,
         company_name VARCHAR(255),
         contact_number VARCHAR(50),
@@ -58,7 +58,7 @@ export async function initDb() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS documents (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         document_id VARCHAR(50) UNIQUE NOT NULL,
         client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
         type VARCHAR(50) NOT NULL,
@@ -75,7 +75,7 @@ export async function initDb() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS document_versions (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         document_id VARCHAR(50) NOT NULL,
         version INTEGER NOT NULL,
         content JSONB NOT NULL,
@@ -107,17 +107,44 @@ export async function initDb() {
       );
     `);
 
-    // Ensure columns are added if tables already existed
+    // Ensure columns are added and constraints are migrated to ON DELETE SET NULL
     try {
       await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';`);
-      await pool.query(`ALTER TABLE clients ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE;`);
+      await pool.query(`ALTER TABLE clients ADD COLUMN IF NOT EXISTS user_id INTEGER;`);
       await pool.query(`ALTER TABLE clients ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;`);
-      await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE;`);
-      await pool.query(`ALTER TABLE documents ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE;`);
+      await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS user_id INTEGER;`);
+      await pool.query(`ALTER TABLE documents ADD COLUMN IF NOT EXISTS user_id INTEGER;`);
       await pool.query(`ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;`);
-      await pool.query(`ALTER TABLE document_versions ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE;`);
-      await pool.query(`ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;`);
+      await pool.query(`ALTER TABLE document_versions ADD COLUMN IF NOT EXISTS user_id INTEGER;`);
+      await pool.query(`ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS user_id INTEGER;`);
       await pool.query(`ALTER TABLE otps ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'login';`);
+
+      // Migrate constraints to ON DELETE SET NULL
+      try {
+        await pool.query(`ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_user_id_fkey;`);
+        await pool.query(`ALTER TABLE clients ADD CONSTRAINT clients_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;`);
+      } catch (e) {}
+
+      try {
+        await pool.query(`ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_user_id_fkey;`);
+        await pool.query(`ALTER TABLE documents ADD CONSTRAINT documents_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;`);
+      } catch (e) {}
+
+      try {
+        await pool.query(`ALTER TABLE document_versions DROP CONSTRAINT IF EXISTS document_versions_user_id_fkey;`);
+        await pool.query(`ALTER TABLE document_versions ADD CONSTRAINT document_versions_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;`);
+      } catch (e) {}
+
+      try {
+        await pool.query(`ALTER TABLE settings DROP CONSTRAINT IF EXISTS settings_user_id_fkey;`);
+        await pool.query(`ALTER TABLE settings ADD CONSTRAINT settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;`);
+      } catch (e) {}
+
+      try {
+        await pool.query(`ALTER TABLE activity_logs DROP CONSTRAINT IF EXISTS activity_logs_user_id_fkey;`);
+        await pool.query(`ALTER TABLE activity_logs ADD CONSTRAINT activity_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;`);
+      } catch (e) {}
+
     } catch (columnErr) {
       console.log('Some columns already initialized.');
     }

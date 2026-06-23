@@ -37,6 +37,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, company_name, contact_number, email, address, project_type, project_description, id } = body;
 
+    if (contact_number && !/^\d{10}$/.test(contact_number)) {
+      return NextResponse.json({ success: false, error: 'Contact number must be exactly 10 digits' }, { status: 400 });
+    }
+
     let res;
     if (id) {
       // Edit Client profile

@@ -290,12 +290,17 @@ export default function ClientsModule() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
-                    Contact Number
+                    Contact Number (10 digits)
                   </label>
                   <input
                     type="text"
+                    maxLength={10}
+                    pattern="[0-9]*"
                     value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setContactNumber(val);
+                    }}
                     className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black focus:outline-none focus:border-black"
                   />
                 </div>

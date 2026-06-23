@@ -42,6 +42,10 @@ export async function POST(request: Request) {
       default_agreement_clauses
     } = body;
 
+    if (phone_number && !/^\d{10}$/.test(phone_number)) {
+      return NextResponse.json({ success: false, error: 'Contact number must be exactly 10 digits' }, { status: 400 });
+    }
+
     // Check if configuration profile exists for this tenant, update or insert
     const existCheck = await pool.query('SELECT id FROM settings WHERE user_id = $1 LIMIT 1', [userId]);
 
