@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'Freelancer OS Team' }],
   creator: 'Freelancer OS',
   metadataBase: new URL('https://freelancer-os.demo'), // Fallback base URL for metadata
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Freelancer OS',
+  },
   robots: {
     index: true,
     follow: true,

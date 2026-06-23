@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { initDb } from '@/lib/init-db';
 
 export async function GET() {
   try {
+    await initDb();
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -24,6 +26,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await initDb();
     const session = await getServerSession(authOptions);
 
     if (!session) {
@@ -71,6 +74,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    await initDb();
     const session = await getServerSession(authOptions);
 
     if (!session) {

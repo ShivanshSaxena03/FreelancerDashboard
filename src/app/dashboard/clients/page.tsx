@@ -130,9 +130,13 @@ export default function ClientsModule() {
         setModalOpen(false);
         fetchClients();
         router.replace('/dashboard/clients');
+      } else {
+        alert(json.error || 'Failed to complete transaction.');
+        setLoading(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err.message || 'A network error occurred. Please try again.');
       setLoading(false);
     }
   };

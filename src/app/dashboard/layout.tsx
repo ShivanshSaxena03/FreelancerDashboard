@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, ChevronRight, Menu, X, Plus, Award } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, ChevronRight, Menu, X, Plus, Award, Download } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
@@ -15,6 +15,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [installAvailable, setInstallAvailable] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).deferredPrompt) {
+      setInstallAvailable(true);
+    }
+
+    const handleInstallAvailable = () => {
+      setInstallAvailable(true);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pwa-install-available', handleInstallAvailable);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pwa-install-available', handleInstallAvailable);
+      }
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    const promptEvent = (window as any).deferredPrompt;
+    if (!promptEvent) return;
+    promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    console.log(`User response to install: ${outcome}`);
+    (window as any).deferredPrompt = null;
+    setInstallAvailable(false);
+  };
 
   const user = session?.user as any;
   const isAdmin = user?.role === 'admin';
@@ -103,6 +133,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* User Card & Logout */}
         <div className="border-t border-neutral-100 pt-6">
+          {installAvailable && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-3 w-full px-3 py-2 mb-3 rounded text-xs font-bold text-black bg-neutral-100 hover:bg-neutral-200 transition-all text-left"
+            >
+              <Download className="w-4 h-4 text-black" />
+              Install App
+            </button>
+          )}
           <div className="flex items-center gap-3 mb-4 px-2">
             <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold uppercase">
               {session.user?.name ? session.user.name.charAt(0) : 'A'}
@@ -178,6 +217,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="border-t border-neutral-100 pt-6">
+            {installAvailable && (
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-3 w-full px-4 py-3 mb-4 rounded text-sm font-bold text-black bg-neutral-100 hover:bg-neutral-200 transition-all text-left"
+              >
+                <Download className="w-5 h-5 text-black" />
+                Install App
+              </button>
+            )}
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="w-9 h-9 rounded-full bg-neutral-900 text-white flex items-center justify-center text-sm font-bold uppercase">
                 {session.user?.name ? session.user.name.charAt(0) : 'A'}
