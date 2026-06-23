@@ -244,7 +244,7 @@ function LoginForm() {
           Don't have an account? Sign Up
         </Link>
         <Link href="/" className="block text-xs text-neutral-400 hover:text-black">
-          Back to landing page
+          Back to Home page
         </Link>
       </div>
     </div>

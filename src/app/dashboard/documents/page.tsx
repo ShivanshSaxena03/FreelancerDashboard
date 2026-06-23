@@ -287,6 +287,7 @@ export default function DocumentsDashboard() {
     };
 
     try {
+      setLoading(true);
       const res = await fetch('/api/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -301,6 +302,7 @@ export default function DocumentsDashboard() {
       }
     } catch (err) {
       console.error(err);
+      setLoading(false);
     }
   };
 
@@ -471,7 +473,7 @@ export default function DocumentsDashboard() {
 
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Meta Config */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                     Document Title / Project Name *
@@ -504,7 +506,7 @@ export default function DocumentsDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                     Document Type
@@ -597,7 +599,7 @@ export default function DocumentsDashboard() {
                   </div>
 
                   {/* Calculations Config */}
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-100">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-neutral-100">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                         Tax Amount ($)
@@ -636,7 +638,7 @@ export default function DocumentsDashboard() {
                   </div>
 
                   {docType === 'quotation' && (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                           Timeline
@@ -678,7 +680,7 @@ export default function DocumentsDashboard() {
                       className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black resize-none"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                         Timeline & Support Duration
@@ -720,7 +722,7 @@ export default function DocumentsDashboard() {
               {/* Requirement Form Editor */}
               {docType === 'requirement' && (
                 <div className="space-y-4 pt-4 border-t border-neutral-100">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                         Color Preferences
@@ -785,7 +787,7 @@ export default function DocumentsDashboard() {
               {/* Handover Document Editor */}
               {docType === 'handover' && (
                 <div className="space-y-4 pt-4 border-t border-neutral-100">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                         Live Website URL
@@ -840,19 +842,22 @@ export default function DocumentsDashboard() {
               <div className="flex justify-end gap-2 pt-4 border-t border-neutral-200 shrink-0">
                 <button
                   type="button"
+                  disabled={loading}
                   onClick={() => {
                     setEditorOpen(false);
                     router.replace('/dashboard/documents');
                   }}
-                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 bg-black text-white rounded text-xs font-semibold hover:bg-neutral-900"
+                  disabled={loading}
+                  className="px-3 py-1.5 bg-black text-white rounded text-xs font-semibold hover:bg-neutral-900 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  Save & Compile Document
+                  {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                  {loading ? 'Processing...' : 'Save & Compile Document'}
                 </button>
               </div>
             </form>

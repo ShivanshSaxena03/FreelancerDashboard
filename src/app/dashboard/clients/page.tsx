@@ -97,6 +97,7 @@ export default function ClientsModule() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const payload = {
       name,
       company_name: companyName,
@@ -132,6 +133,7 @@ export default function ClientsModule() {
       }
     } catch (err) {
       console.error(err);
+      setLoading(false);
     }
   };
 
@@ -243,7 +245,7 @@ export default function ClientsModule() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                     Client Name *
@@ -269,7 +271,7 @@ export default function ClientsModule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                     Email Address *
@@ -338,15 +340,18 @@ export default function ClientsModule() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                  disabled={loading}
+                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 bg-black text-white rounded text-xs font-semibold hover:bg-neutral-900"
+                  disabled={loading}
+                  className="px-3 py-1.5 bg-black text-white rounded text-xs font-semibold hover:bg-neutral-900 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  {editingClient ? 'Save Changes' : 'Create Profile'}
+                  {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                  {loading ? 'Processing...' : (editingClient ? 'Save Changes' : 'Create Profile')}
                 </button>
               </div>
             </form>

@@ -275,7 +275,13 @@ export const PremiumPdfDocument = ({ type, documentId, title, client, freelancer
             <Text style={styles.clauseTitle}>6. Limitation of Liability</Text>
             <Text>{content.liabilityClause || freelancer?.default_agreement_clauses?.liability}</Text>
 
-            <Text style={styles.clauseTitle}>7. Maintenance Programs & Support Packages</Text>
+            <Text style={styles.clauseTitle}>7. Payment Default & Project Suspension</Text>
+            <Text>Failure to clear invoice milestones within 7 business days of the deadline will result in immediate suspension of all production work, credentials access, and active deployments until account balances are settled.</Text>
+
+            <Text style={styles.clauseTitle}>8. Termination & Dispute Resolution</Text>
+            <Text>Either party may terminate this agreement with 14 days written notice. In the event of early termination, the client shall reimburse the Developer for all work completed up to the date of notice. Disputes shall be resolved through amicable negotiation before proceeding to formal arbitration.</Text>
+
+            <Text style={styles.clauseTitle}>9. Maintenance Programs & Support Packages</Text>
             <Text>{freelancer?.default_agreement_clauses?.maintenancePlans || 'Basic Plan (₹299/mo) and Pro Plan (₹549/mo) support structures available upon request.'}</Text>
           </View>
         )}

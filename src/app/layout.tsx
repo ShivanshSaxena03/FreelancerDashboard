@@ -6,8 +6,32 @@ import Providers from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Freelancer Document Automation Dashboard',
-  description: 'Create professional proposals, agreements, requirement forms, invoices, and handovers instantly.',
+  title: {
+    default: 'Freelancer OS - Document Automation & Management Platform',
+    template: '%s | Freelancer OS'
+  },
+  description: 'An agency-grade, multi-tenant OS for freelancers. Automate client onboarding, quotations, agreements, invoices, requirement forms, and project handovers to premium agency-grade PDFs.',
+  keywords: ['freelancer dashboard', 'document automation', 'proposal builder', 'contract generator', 'invoice maker', 'agency template creator', 'freelancer OS'],
+  authors: [{ name: 'Freelancer OS Team' }],
+  creator: 'Freelancer OS',
+  metadataBase: new URL('https://freelancer-os.demo'), // Fallback base URL for metadata
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://freelancer-os.demo',
+    title: 'Freelancer OS - Document Automation & Management Platform',
+    description: 'Create professional proposals, agreements, requirement forms, invoices, and handovers instantly to premium agency-grade PDFs.',
+    siteName: 'Freelancer OS',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Freelancer OS - Document Automation & Management Platform',
+    description: 'Agency-grade multi-tenant dashboard to generate proposals, contracts, requirement specs, and invoices.',
+  },
 };
 
 export default function RootLayout({

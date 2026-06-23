@@ -305,20 +305,23 @@ export default function AdminDashboard() {
               <div className="flex justify-end gap-2 pt-4 border-t border-neutral-100">
                 <button
                   type="button"
+                  disabled={loading}
                   onClick={() => {
                     setDeleteConfirmOpen(false);
                     setUserToDelete(null);
                     setRemovalReason('');
                   }}
-                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteUser}
-                  className="px-3 py-1.5 bg-red-600 text-white rounded text-xs font-semibold hover:bg-red-700"
+                  disabled={loading}
+                  className="px-3 py-1.5 bg-red-600 text-white rounded text-xs font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                 >
-                  Deactivate User Account
+                  {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                  {loading ? 'Processing...' : 'Deactivate User Account'}
                 </button>
               </div>
             </div>
@@ -417,6 +420,7 @@ export default function AdminDashboard() {
               <div className="flex justify-end gap-2 pt-4 border-t border-neutral-100">
                 <button
                   type="button"
+                  disabled={loading}
                   onClick={() => {
                     setAddModalOpen(false);
                     setNewUserName('');
@@ -425,15 +429,17 @@ export default function AdminDashboard() {
                     setAddError('');
                     setAddSuccess('');
                   }}
-                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                  className="px-3 py-1.5 border border-neutral-200 rounded text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 bg-black text-white rounded text-xs font-semibold hover:bg-neutral-900"
+                  disabled={loading}
+                  className="px-3 py-1.5 bg-black text-white rounded text-xs font-semibold hover:bg-neutral-900 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  Register User
+                  {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                  {loading ? 'Processing...' : 'Register User'}
                 </button>
               </div>
             </form>
