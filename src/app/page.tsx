@@ -36,29 +36,18 @@ export default function LandingPage() {
           <span className="text-sm font-bold tracking-tight">Freelancer OS</span>
         </div>
         <div className="flex items-center gap-4">
-          {session ? (
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-1.5 px-4 py-2 bg-black text-white text-xs font-bold rounded-full hover:bg-neutral-900 transition-all shadow-sm"
-            >
-              Enter Dashboard <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="text-xs font-bold text-neutral-600 hover:text-black transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="px-4 py-2 bg-black text-white text-xs font-bold rounded-full hover:bg-neutral-900 transition-all shadow-sm"
-              >
-                Get Started
-              </Link>
-            </>
-          )}
+          <Link
+            href="/login"
+            className="text-xs font-bold text-neutral-600 hover:text-black transition-colors"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/register"
+            className="px-4 py-2 bg-black text-white text-xs font-bold rounded-full hover:bg-neutral-900 transition-all shadow-sm"
+          >
+            Get Started
+          </Link>
         </div>
       </header>
 
