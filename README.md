@@ -1,6 +1,10 @@
 # Freelancer OS - Freelancer Dashboard
 
-A fully featured, production-ready, and highly secure Progressive Web Application (PWA) designed for freelancers to manage clients, build dynamic PDF contracts/invoices on the fly, track project metadata, and monitor system-wide activity.
+## 📝 Project Description
+
+**Freelancer OS** is a modern, premium, and highly secure Progressive Web Application (PWA) designed specifically for independent freelancers, contractors, and agency owners. It serves as a unified workspace dashboard to manage client relationships, build dynamic and legally compliant contracts/invoices on-the-fly, keep tracks of project iterations, and audit active workspace logs.
+
+The goal of the project is to replace disconnected tools (like external PDF editors, spreadsheet trackers, and basic client managers) with a single, fast, offline-capable dashboard. It enforces strict data constraints, secure verification protocols, and real-time security protections to ensure client data remains isolated and safe.
 
 ## ✨ Features
 
