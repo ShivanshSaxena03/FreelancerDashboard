@@ -1,12 +1,43 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { ArrowRight, ChevronRight, FileText, Layout, Play, Plus, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronRight, FileText, Layout, Play, Plus, ShieldCheck, Sparkles, Download } from 'lucide-react';
 import Particles from './dashboard/components/Particles';
 
 export default function LandingPage() {
   const { data: session } = useSession();
+  const [installAvailable, setInstallAvailable] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).deferredPrompt) {
+      setInstallAvailable(true);
+    }
+
+    const handleInstallAvailable = () => {
+      setInstallAvailable(true);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pwa-install-available', handleInstallAvailable);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pwa-install-available', handleInstallAvailable);
+      }
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    const promptEvent = (window as any).deferredPrompt;
+    if (!promptEvent) return;
+    promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    console.log(`User response to install: ${outcome}`);
+    (window as any).deferredPrompt = null;
+    setInstallAvailable(false);
+  };
 
   return (
     <div className="min-h-screen bg-white text-black overflow-hidden relative selection:bg-black selection:text-white">
@@ -36,6 +67,14 @@ export default function LandingPage() {
           <span className="text-sm font-bold tracking-tight">Freelancer OS</span>
         </div>
         <div className="flex items-center gap-4">
+          {installAvailable && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-neutral-200 text-black text-xs font-bold rounded-full hover:bg-neutral-50 transition-all cursor-pointer bg-white"
+            >
+              <Download className="w-3.5 h-3.5" /> Install App
+            </button>
+          )}
           <Link
             href="/login"
             className="text-xs font-bold text-neutral-600 hover:text-black transition-colors"
@@ -72,6 +111,15 @@ export default function LandingPage() {
             Claim Your Workspace
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
+          {installAvailable && (
+            <button
+              onClick={handleInstallClick}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-black bg-black text-white hover:bg-neutral-900 text-xs font-bold rounded-full transition-all shadow-sm cursor-pointer"
+            >
+              <Download className="w-3 h-3" />
+              Install App
+            </button>
+          )}
           <Link
             href="/login"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-bold rounded-full transition-all shadow-sm"
