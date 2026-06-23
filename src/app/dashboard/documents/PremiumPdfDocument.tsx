@@ -144,6 +144,7 @@ export const PremiumPdfDocument = ({ type, documentId, title, client, freelancer
   const isAgreement = type === 'agreement';
   const isRequirement = type === 'requirement';
   const isHandover = type === 'handover';
+  const currency = content.currency || '$';
 
   return (
     <Document>
@@ -197,7 +198,7 @@ export const PremiumPdfDocument = ({ type, documentId, title, client, freelancer
               <View key={index} style={styles.tableRow}>
                 <Text style={styles.col1}>{service.name}</Text>
                 <Text style={styles.col2}>{service.description || 'N/A'}</Text>
-                <Text style={styles.col3}>${parseFloat(service.price || '0').toFixed(2)}</Text>
+                <Text style={styles.col3}>{currency}{parseFloat(service.price || '0').toFixed(2)}</Text>
               </View>
             ))}
 
@@ -205,23 +206,23 @@ export const PremiumPdfDocument = ({ type, documentId, title, client, freelancer
             <View style={{ marginTop: 15, borderTopWidth: 1, borderTopColor: '#eee', paddingTop: 10 }}>
               <View style={styles.tableRow}>
                 <Text style={styles.colTotal}>Subtotal</Text>
-                <Text style={styles.colTotalVal}>${parseFloat(content.subtotal || '0').toFixed(2)}</Text>
+                <Text style={styles.colTotalVal}>{currency}{parseFloat(content.subtotal || '0').toFixed(2)}</Text>
               </View>
               {parseFloat(content.discount || '0') > 0 && (
                 <View style={styles.tableRow}>
                   <Text style={styles.colTotal}>Discount</Text>
-                  <Text style={styles.colTotalVal}>-${parseFloat(content.discount || '0').toFixed(2)}</Text>
+                  <Text style={styles.colTotalVal}>-{currency}{parseFloat(content.discount || '0').toFixed(2)}</Text>
                 </View>
               )}
               {parseFloat(content.tax || '0') > 0 && (
                 <View style={styles.tableRow}>
                   <Text style={styles.colTotal}>Tax</Text>
-                  <Text style={styles.colTotalVal}>${parseFloat(content.tax || '0').toFixed(2)}</Text>
+                  <Text style={styles.colTotalVal}>{currency}{parseFloat(content.tax || '0').toFixed(2)}</Text>
                 </View>
               )}
               <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
                 <Text style={[styles.colTotal, { fontSize: 12 }]}>Grand Total</Text>
-                <Text style={[styles.colTotalVal, { fontSize: 12 }]}>${parseFloat(content.grandTotal || content.total || '0').toFixed(2)}</Text>
+                <Text style={[styles.colTotalVal, { fontSize: 12 }]}>{currency}{parseFloat(content.grandTotal || content.total || '0').toFixed(2)}</Text>
               </View>
             </View>
           </View>

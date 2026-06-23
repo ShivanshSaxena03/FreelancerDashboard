@@ -65,6 +65,7 @@ export default function DocumentsDashboard() {
   const [advancePercent, setAdvancePercent] = useState(50);
   const [tax, setTax] = useState(0);
   const [discount, setDiscount] = useState(0);
+  const [currency, setCurrency] = useState('$');
 
   // Agreement Clauses
   const [projectScope, setProjectScope] = useState('');
@@ -149,6 +150,7 @@ export default function DocumentsDashboard() {
     setAdvancePercent(50);
     setTax(0);
     setDiscount(0);
+    setCurrency('$');
 
     setProjectScope('');
     setSupportDuration('30 Days');
@@ -196,6 +198,7 @@ export default function DocumentsDashboard() {
           setAdvancePercent(content.advancePercent || 50);
           setTax(content.tax || 0);
           setDiscount(content.discount || 0);
+          setCurrency(content.currency || '$');
         } else if (doc.type === 'agreement') {
           setProjectScope(content.projectScope || '');
           setSupportDuration(content.supportDuration || '');
@@ -244,6 +247,7 @@ export default function DocumentsDashboard() {
         advancePercent,
         tax,
         discount,
+        currency,
         subtotal,
         grandTotal,
         status: docStatus,
@@ -578,9 +582,8 @@ export default function DocumentsDashboard() {
                         <div className="w-24">
                           <input
                             type="number"
-                            placeholder="Price ($)"
-                            required
-                            value={service.price}
+                            placeholder="0"
+                            value={service.price === 0 ? '' : service.price}
                             onChange={(e) => updateService(index, 'price', parseFloat(e.target.value) || 0)}
                             className="block w-full px-2 py-1 border border-neutral-200 bg-white rounded text-xs"
                           />
@@ -599,25 +602,43 @@ export default function DocumentsDashboard() {
                   </div>
 
                   {/* Calculations Config */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-neutral-100">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-neutral-100">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
-                        Tax Amount ($)
+                        Currency
+                      </label>
+                      <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
+                      >
+                        <option value="$">USD ($)</option>
+                        <option value="₹">INR (₹)</option>
+                        <option value="€">EUR (€)</option>
+                        <option value="£">GBP (£)</option>
+                        <option value="¥">JPY (¥)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
+                        Tax Amount
                       </label>
                       <input
                         type="number"
-                        value={tax}
+                        value={tax === 0 ? '' : tax}
+                        placeholder="0"
                         onChange={(e) => setTax(parseFloat(e.target.value) || 0)}
                         className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                       />
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
-                        Discount ($)
+                        Discount
                       </label>
                       <input
                         type="number"
-                        value={discount}
+                        value={discount === 0 ? '' : discount}
+                        placeholder="0"
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                         className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                       />
@@ -629,7 +650,8 @@ export default function DocumentsDashboard() {
                         </label>
                         <input
                           type="number"
-                          value={advancePercent}
+                          value={advancePercent === 0 ? '' : advancePercent}
+                          placeholder="0"
                           onChange={(e) => setAdvancePercent(parseInt(e.target.value) || 0)}
                           className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                         />
@@ -638,7 +660,7 @@ export default function DocumentsDashboard() {
                   </div>
 
                   {docType === 'quotation' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                           Timeline
@@ -647,6 +669,18 @@ export default function DocumentsDashboard() {
                           type="text"
                           value={timeline}
                           onChange={(e) => setTimeline(e.target.value)}
+                          className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
+                          Revisions Included
+                        </label>
+                        <input
+                          type="number"
+                          value={revisions === 0 ? '' : revisions}
+                          placeholder="0"
+                          onChange={(e) => setRevisions(parseInt(e.target.value) || 0)}
                           className="block w-full px-3 py-1.5 border border-neutral-200 rounded text-xs bg-white text-black"
                         />
                       </div>
