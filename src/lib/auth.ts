@@ -143,19 +143,24 @@ export const authOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.email = user.email;
+        token.name = user.name;
       }
 
       // Check if user still exists to enforce deactivation/session suspension
       if (token?.id) {
         try {
-          const userCheck = await pool.query('SELECT role FROM users WHERE id = $1', [token.id]);
+          const userCheck = await pool.query('SELECT role, email, name FROM users WHERE id = $1', [token.id]);
           if (userCheck.rows.length === 0) {
             return null; // Forces token invalidation
           }
+          token.role = userCheck.rows[0].role;
+          token.email = userCheck.rows[0].email;
+          token.name = userCheck.rows[0].name;
         } catch (dbErr) {
           console.error('Error validating token user:', dbErr);
         }
@@ -167,6 +172,8 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.email = token.email;
+        session.user.name = token.name;
       }
       return session;
     }

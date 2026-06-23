@@ -11,8 +11,9 @@ export default function SessionTimer() {
   useEffect(() => {
     if (!session) return;
 
-    // Track timer using localStorage to preserve state across multiple tabs or page updates
-    const LOCAL_STORAGE_KEY = 'session_timer_expiry';
+    // Track timer using localStorage scoped to the current user ID to prevent cross-session leaks
+    const userId = (session?.user as any)?.id || session?.user?.email || 'anonymous';
+    const LOCAL_STORAGE_KEY = `session_timer_expiry_${userId}`;
     const initTimer = () => {
       const storedExpiry = localStorage.getItem(LOCAL_STORAGE_KEY);
       const now = Date.now();
