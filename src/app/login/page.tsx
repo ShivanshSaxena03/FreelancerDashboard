@@ -79,11 +79,14 @@ function LoginForm() {
       if (res?.error) {
         setError(res.error);
       } else {
-        const isUserAdmin = email.toLowerCase().trim() === 'shivanshsaxena03102006@gmail.com';
-        if (isUserAdmin) {
-          window.location.href = '/dashboard/admin';
+        // Trigger a hard refetch or session inspect to grab the user role
+        const sessionRes = await fetch('/api/auth/session');
+        const activeSession = await sessionRes.json();
+        const user = activeSession?.user as any;
+        if (user?.role === 'admin') {
+          router.push('/dashboard/admin');
         } else {
-          window.location.href = '/dashboard';
+          router.push('/dashboard');
         }
       }
     } catch (err) {
@@ -122,7 +125,7 @@ function LoginForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="shivanshsaxena03102006@gmail.com"
+                  placeholder="validmail@gmail.com"
                   className="block w-full pl-9 pr-3 py-2 border border-neutral-200 rounded text-xs bg-white text-black placeholder-neutral-400 focus:outline-none focus:border-black transition-all"
                 />
               </div>
