@@ -79,11 +79,8 @@ function LoginForm() {
       if (res?.error) {
         setError(res.error);
       } else {
-        // Trigger a hard refetch or session inspect to grab the user role
-        const sessionRes = await fetch('/api/auth/session');
-        const activeSession = await sessionRes.json();
-        const user = activeSession?.user as any;
-        if (user?.role === 'admin') {
+        const isUserAdmin = email.toLowerCase().trim() === 'shivanshsaxena03102006@gmail.com';
+        if (isUserAdmin) {
           window.location.href = '/dashboard/admin';
         } else {
           window.location.href = '/dashboard';
