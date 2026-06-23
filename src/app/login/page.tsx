@@ -23,7 +23,12 @@ function LoginForm() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/dashboard');
+      const user = session?.user as any;
+      if (user?.role === 'admin') {
+        router.push('/dashboard/admin');
+      } else {
+        router.push('/dashboard');
+      }
     }
 
     const reason = searchParams.get('reason');
@@ -31,7 +36,7 @@ function LoginForm() {
       setError('Your admin session has expired due to 1 hour inactivity. Please log in again.');
       localStorage.removeItem('session_timer_expiry');
     }
-  }, [status, router, searchParams]);
+  }, [status, session, router, searchParams]);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +79,15 @@ function LoginForm() {
       if (res?.error) {
         setError(res.error);
       } else {
-        router.push('/dashboard');
+        // Trigger a hard refetch or session inspect to grab the user role
+        const sessionRes = await fetch('/api/auth/session');
+        const activeSession = await sessionRes.json();
+        const user = activeSession?.user as any;
+        if (user?.role === 'admin') {
+          router.push('/dashboard/admin');
+        } else {
+          router.push('/dashboard');
+        }
       }
     } catch (err) {
       setError('An unexpected validation error occurred.');
